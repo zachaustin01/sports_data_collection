@@ -40,4 +40,4 @@ def get_all_box_scores(season_yr):
         sleep(0.25)
         n += 1
     
-    return all_results
+    return pd.concat(all_results)
