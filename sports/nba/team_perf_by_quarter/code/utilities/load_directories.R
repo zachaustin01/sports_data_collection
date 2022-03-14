@@ -12,6 +12,8 @@
 
 base_path = repo_path
 
+lake_path = file.path(base_path,
+                      'lake')
 code_path = file.path(base_path,
                       'code')
 dev_path = file.path(code_path,

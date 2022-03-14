@@ -1,0 +1,53 @@
+---
+title: "Team Performance Starter Notebook"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+rm(list=ls())
+
+```
+
+```{r}
+
+
+
+project_name = 'sports/nba/team_perf_by_quarter'
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+repo_path = file.path(substr(getwd(),0,gregexpr(pattern = project_name ,
+                                                getwd())[[1]][1]-2),
+                      project_name)
+
+source(file.path(repo_path,
+                 'code',
+                 'utilities',
+                 'load_directories.r'),
+       local = knitr::knit_global())
+
+
+```
+
+```{r}
+
+p <- c("tidyverse",
+       "lubridate",
+       "ggplot2",
+       "reticulate")
+
+load_all_packages(p)
+
+```
+
+```{r}
+
+
+
+```
+
+
