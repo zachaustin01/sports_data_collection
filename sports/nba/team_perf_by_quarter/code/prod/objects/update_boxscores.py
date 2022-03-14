@@ -36,8 +36,8 @@ def pull_games(lake_file_path,season_yr,quarter):
       boxscore_finder = boxscoretraditionalv2.BoxScoreTraditionalV2(
           game_id = game,
           range_type = 2,
-          start_range = 0, 
-          end_range = 21600)
+          start_range = 0*min(1-quarter,0), 
+          end_range = 21600*quarter)
       boxscore = boxscore_finder.get_data_frames()[0]
       boxscores.append(boxscore)
       time.sleep(0.5)

@@ -44,6 +44,19 @@ load_all_packages(p)
 
 ```
 
+This cell establishes how the averages will be done. Leave these as parameters,
+as customers are unsure how they want to calculate at this time. For my live 
+model, I use 70% of the average as from the last 10 games, 30% from season-long
+cumulative averages.
+
+```{r}
+
+# w_vec = c(rk,cummean) ... should add to 1
+w_vec = c(.7,.3)
+k = 10
+
+```
+
 ```{r}
 
 
