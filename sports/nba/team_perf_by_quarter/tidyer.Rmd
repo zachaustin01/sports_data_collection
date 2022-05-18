@@ -1,0 +1,258 @@
+---
+title: "Team Quarter Data"
+author: "Zach Austin"
+date: "3/28/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+rm(list=ls())
+
+```
+
+```{r}
+
+sport = "nba"
+project = "player_props"
+d_base = "C:/Users/zacha/OneDrive/Desktop"
+
+d_code = file.path(d_base,"sports_data_collection")
+d_sport_code = file.path(d_code,"sports",sport)
+d_sport_project = file.path(d_sport_code,project)
+
+d_data = file.path(d_base,"sports_data_storage")
+d_sport_data = file.path(d_data,"sports",sport)
+d_sport_data_project = file.path(d_sport_data,project)
+
+d_tools = file.path(d_code,"tools")
+
+source(file.path(d_tools,"package_load_funcs.r"))
+
+```
+
+```{r}
+
+p = c('reticulate','tidyverse','zoo')
+load_all_packages(p)
+
+```
+```{r}
+
+team_bs_q1 <- read.csv("C:/Users/zacha/OneDrive/Desktop/sports_data_storage/sports/nba/team_perf_by_quarter/team_bs_q1.csv") %>% 
+  mutate(PERIOD = 1)
+
+team_bs_q2 <- read.csv("C:/Users/zacha/OneDrive/Desktop/sports_data_storage/sports/nba/team_perf_by_quarter/team_bs_q2.csv") %>% 
+  mutate(PERIOD = 2)
+
+team_bs_q3 <- read.csv("C:/Users/zacha/OneDrive/Desktop/sports_data_storage/sports/nba/team_perf_by_quarter/team_bs_q3.csv") %>% 
+  mutate(PERIOD = 3)
+
+team_bs_q4 <- read.csv("C:/Users/zacha/OneDrive/Desktop/sports_data_storage/sports/nba/team_perf_by_quarter/team_bs_q4.csv") %>% 
+  mutate(PERIOD = 4)
+
+```
+
+
+```{r}
+
+game_summaries <- read.csv('C:/Users/zacha/OneDrive/Desktop/sports_data_storage/sports/nba/team_perf_by_quarter/game_summaries.csv')
+
+```
+
+```{r}
+
+add_lagged_rolls <- function(df, cols, weight_vec, k) {
+  for(col in cols) {
+    df$temp = df[[col]]
+    df = df %>%
+      mutate(
+        temp_rolling = lag(round(
+          (weight_vec[1]*ifelse(is.na(rollmean(temp,k,fill=NA,align="right")),
+                     cummean(temp),
+                     rollmean(temp,k,fill=NA,align="right")) +
+             weight_vec[2]*cummean(temp)),2)
+          ,1)
+      ) %>%
+      select(-temp)
+    var_name = paste0(col,"_rolling_lag")
+    df[[var_name]] = df$temp_rolling
+    df = df %>%
+      select(-temp_rolling)
+  }
+  return(df)
+}
+
+w_vec = c(1,0)
+k = 7
+
+```
+
+
+
+```{r}
+
+team_bs = rbind(team_bs_q1,team_bs_q2,team_bs_q3,team_bs_q4)
+
+write.csv("C:/Users/zacha/OneDrive/Desktop/sports_data_storage/sports/nba/team_perf_by_quarter/team_bs_raw.csv")
+
+team_bs = team_bs %>%
+  left_join(
+    game_summaries %>% 
+      select(GAME_ID,GAME_DATE) %>% 
+      unique(),
+    by = "GAME_ID"
+  ) %>% 
+  left_join(team_bs,by=c("GAME_ID","PERIOD")) %>% 
+  filter(TEAM_ID.x!=TEAM_ID.y) %>% 
+  select(
+    GAME_ID,
+    GAME_DATE,
+    PERIOD,
+    TEAM_ID.x,
+    TEAM_NAME.x,
+    TEAM_ABBREVIATION.x,
+    TEAM_CITY.x,
+    FGM.x,
+    FGA.x,
+    FG3M.x,
+    FG3A.x,
+    FTM.x,
+    FTA.x,
+    OREB.x,
+    DREB.x,
+    REB.x,
+    AST.x,
+    STL.x,
+    BLK.x,
+    TO.x,
+    PF.x,
+    PTS.x,
+    PLUS_MINUS.x,
+    FGM.y,
+    FGA.y,
+    FG3M.y,
+    FG3A.y,
+    FTM.y,
+    FTA.y,
+    OREB.y,
+    DREB.y,
+    REB.y,
+    AST.y,
+    STL.y,
+    BLK.y,
+    TO.y,
+    PF.y,
+    PTS.y,
+    PLUS_MINUS.y,
+  ) %>% 
+  group_by(TEAM_ID.x,PERIOD) %>% 
+  arrange(TEAM_ID.x,PERIOD,GAME_DATE)
+
+```
+
+```{r}
+
+final_team_bs = team_bs %>% 
+  add_lagged_rolls(names(team_bs)[8:39],w_vec,k) %>% 
+  select(-names(team_bs)[8:39])
+
+final_team_bs = final_team_bs %>% 
+  arrange(desc(GAME_DATE),GAME_ID,TEAM_ID.x,PERIOD)
+
+write.csv(final_team_bs,"C:/Users/zacha/OneDrive/Desktop/sports_data_storage/sports/nba/team_perf_by_quarter/final_team_bs.csv",row.names = F)
+
+```
+
+
+```{r}
+
+player_bs_q1 <- read.csv("C:/Users/zacha/OneDrive/Desktop/sports_data_storage/sports/nba/team_perf_by_quarter/player_bs_q1.csv") %>% 
+  mutate(PERIOD = 1)
+
+player_bs_q2 <- read.csv("C:/Users/zacha/OneDrive/Desktop/sports_data_storage/sports/nba/team_perf_by_quarter/player_bs_q2.csv") %>% 
+  mutate(PERIOD = 2)
+
+player_bs_q3 <- read.csv("C:/Users/zacha/OneDrive/Desktop/sports_data_storage/sports/nba/team_perf_by_quarter/player_bs_q3.csv") %>% 
+  mutate(PERIOD = 3)
+
+player_bs_q4 <- read.csv("C:/Users/zacha/OneDrive/Desktop/sports_data_storage/sports/nba/team_perf_by_quarter/player_bs_q4.csv") %>% 
+  mutate(PERIOD = 4)
+
+
+```
+
+```{r}
+
+player_bs = rbind(player_bs_q1,player_bs_q2,player_bs_q3,player_bs_q4) %>% 
+  select(-c(NICKNAME,COMMENT,FG_PCT,FG3_PCT,FT_PCT))
+
+final_player_bs = player_bs %>% 
+  left_join(game_summaries %>% 
+              select(GAME_ID,GAME_DATE) %>% 
+              unique(),
+            by = "GAME_ID") %>%
+  mutate(MIN = round(as.double(sub(":.*", "", MIN)) +
+                       as.double(substr(sub(".*:","",MIN),1,2))/60,
+                     2)) %>% 
+  group_by(TEAM_ID,PLAYER_ID,PERIOD) %>% 
+  arrange(TEAM_ID,PLAYER_ID,PERIOD,GAME_DATE) %>% 
+  add_lagged_rolls(names(player_bs)[8:24],w_vec,k) %>% 
+  select(-names(player_bs)[8:24])
+
+final_player_bs = final_player_bs %>% 
+  arrange(PLAYER_ID,TEAM_ID,desc(GAME_DATE),PERIOD) %>% 
+  ungroup() %>% 
+  group_by(TEAM_ID) %>% 
+  mutate(MAX_DATE = max(GAME_DATE)) %>% 
+  mutate(r = ifelse(MAX_DATE==GAME_DATE,1,0))
+  
+
+
+```
+
+
+```{r}
+
+write.csv(final_player_bs,"C:/Users/zacha/OneDrive/Desktop/sports_data_storage/sports/nba/team_perf_by_quarter/final_player_bs.csv",row.names = F)
+
+```
+
+```{r}
+
+names(final_player_bs)
+
+tidy_player_bs = final_player_bs %>% 
+  mutate(TEAM_PLUS_MINUS_rolling_lag = PLUS_MINUS_rolling_lag / 5) %>% 
+  gather('STAT','VALUE',c(names(final_player_bs)[10:26],TEAM_PLUS_MINUS_rolling_lag))
+
+write.csv(tidy_player_bs,"C:/Users/zacha/OneDrive/Desktop/sports_data_storage/sports/nba/team_perf_by_quarter/tidy_player_bs.csv",row.names = F)
+
+```
+
+```{r}
+
+t = tidy_player_bs %>% 
+  filter(r==1,
+         STAT == 'PTS_rolling_lag',
+         TEAM_ABBREVIATION =='LAL')
+
+```
+
+```{r}
+
+tidy_team_bs = final_team_bs %>% 
+  gather('STAT','VALUE',names(final_team_bs)[8:39]) %>% 
+  group_by(TEAM_ID.x) %>% 
+  mutate(MAX_DATE = max(GAME_DATE)) %>% 
+  mutate(r = ifelse(GAME_DATE==MAX_DATE,1,0))
+
+write.csv(tidy_team_bs,"C:/Users/zacha/OneDrive/Desktop/sports_data_storage/sports/nba/team_perf_by_quarter/tidy_team_bs.csv",row.names = F)
+
+```
+
+
