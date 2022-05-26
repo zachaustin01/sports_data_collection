@@ -85,11 +85,11 @@ f5_odds <- function(){
 
 nrfi_odds <- function(){
 
-  nrfi_link <- "https://sportsbook-us-in.draftkings.com//sites/US-IN-SB/api/v4/eventgroups/88670847/categories/1024?format=json"
+  nrfi_link <- "https://sportsbook-us-ct.draftkings.com//sites/US-CT-SB/api/v4/eventgroups/88670847/categories/729/subcategories/11376?format=json"
 
   test <- GET(nrfi_link,
               add_headers(
-                "Host" = "sportsbook-us-in.draftkings.com",
+                "Host" = "sportsbook-us-ct.draftkings.com",
                 "User-Agent" = "DKWeb",
                 "Accept" = "application/json",
                 "Accept-Language" = "en-US,en;q=0.9",

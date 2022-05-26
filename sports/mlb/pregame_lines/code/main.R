@@ -45,7 +45,7 @@ game_lines = full_game() %>%
 
 final = rbind(f5_lines,nrfi_lines,game_lines)
 
-write.csv(final,file.path(data_out,paste0('game_lines_',Sys.Date(),'.csv')),row.names = F)
+write.csv(final,file.path(data_out,'lines',paste0('game_lines_',Sys.Date(),'.csv')),row.names = F)
 
 
 
