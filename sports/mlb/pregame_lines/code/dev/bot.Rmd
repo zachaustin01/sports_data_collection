@@ -1,0 +1,44 @@
+---
+title: "Bot"
+author: "Zach Austin"
+date: "5/28/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r}
+
+rm(list=ls())
+
+```
+
+```{r}
+
+
+project_name = 'sports_data_collection/sports/mlb/pregame_lines'
+
+setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+repo_path = file.path(substr(getwd(),0,gregexpr(pattern = project_name ,
+                                                getwd())[[1]][1]-2),
+                      project_name)
+
+source(file.path(repo_path,
+                 'code',
+                 'utilities',
+                 'load_directories.r'),
+       local = knitr::knit_global())
+
+p <- c("tidyverse",
+       "httr"
+)
+
+load_all_packages(p)
+
+
+```
+
