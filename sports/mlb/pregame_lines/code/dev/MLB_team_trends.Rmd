@@ -72,7 +72,7 @@ days_results = function(d){
   base = json_return[["games"]]
   
   n_games = nrow(base)
-  df <- data.frame(matrix(ncol = 46, nrow = n_games))
+  df <- data.frame(matrix(ncol = 48, nrow = n_games))
   x <- c(
          "GAME_TIME", 
          "HOME_TEAM_ID",
@@ -85,8 +85,10 @@ days_results = function(d){
          "AWAY_TEAM_LOGO",
          "HOME_PITCHER_ID",
          "HOME_PITCHER_NAME",
+         "HOME_PITCHER_THROW",
          "AWAY_PITCHER_ID",
          "AWAY_PITCHER_NAME",
+         "AWAY_PITCHER_THROW",
          "HOME_FG_SPREAD",
          "HOME_FG_SPREAD_PRICE",
          "AWAY_FG_SPREAD",
@@ -169,6 +171,11 @@ days_results = function(d){
       players = temp$players[[1]] %>% 
         select(id,full_name)
       
+      handedness = temp$players[[1]][['handedness']]
+      
+      players = cbind(players,handedness) %>% 
+        select(-bat)
+      
       row$F5_HOME_RUNS = linescore[5,'total_home_runs']
       row$F5_AWAY_RUNS = linescore[5,'total_away_runs']
       
@@ -179,11 +186,13 @@ days_results = function(d){
       
       r2 = row %>% 
         left_join(players,by=c("HOME_PITCHER_ID"="id")) %>% 
-        mutate(HOME_PITCHER_NAME = full_name) %>% 
-        select(-full_name) %>% 
+        mutate(HOME_PITCHER_NAME = full_name,
+               HOME_PITCHER_THROW = throw) %>% 
+        select(-c(full_name,throw)) %>% 
         left_join(players,by=c("AWAY_PITCHER_ID"="id")) %>% 
-        mutate(AWAY_PITCHER_NAME = full_name) %>% 
-        select(-full_name)
+        mutate(AWAY_PITCHER_NAME = full_name,
+               AWAY_PITCHER_THROW = throw) %>% 
+        select(-c(full_name,throw))
       row = r2
       
       game_lines = temp$odds[[1]] %>% 
@@ -253,7 +262,7 @@ dates = gsub("-", "", dates)
 
 ```{r}
 
-final <- data.frame(matrix(ncol = 46, nrow = 0))
+final <- data.frame(matrix(ncol = 48, nrow = 0))
 colnames(final) <- x
 
 for(d in dates){
@@ -291,6 +300,7 @@ away_df = final %>%
     
     'PITCHER_ID' = 'AWAY_PITCHER_ID',
     'PITCHER_NAME' = 'AWAY_PITCHER_NAME',
+    'PITCHER_THROW' = 'AWAY_PITCHER_THROW',
     'FG_SPREAD' = 'AWAY_FG_SPREAD',
     'FG_SPREAD_PRICE' = 'AWAY_FG_SPREAD_PRICE',
     'FG_TEAM_TOTAL' = 'FG_AWAY_TEAM_TOTAL',
@@ -315,6 +325,7 @@ away_df = final %>%
     
     'OPP_PITCHER_ID' = 'HOME_PITCHER_ID',
     'OPP_PITCHER_NAME' = 'HOME_PITCHER_NAME',
+    'OPP_PITCHER_THROW' = 'HOME_PITCHER_THROW',
     'OPP_FG_SPREAD' = 'HOME_FG_SPREAD',
     'OPP_FG_SPREAD_PRICE' = 'HOME_FG_SPREAD_PRICE',
     'OPP_FG_TEAM_TOTAL' = 'FG_HOME_TEAM_TOTAL',
@@ -342,6 +353,7 @@ home_df = final %>%
     
     'PITCHER_ID' = 'HOME_PITCHER_ID',
     'PITCHER_NAME' = 'HOME_PITCHER_NAME',
+    'PITCHER_THROW' = 'HOME_PITCHER_THROW',
     'FG_SPREAD' = 'HOME_FG_SPREAD',
     'FG_SPREAD_PRICE' = 'HOME_FG_SPREAD_PRICE',
     'FG_TEAM_TOTAL' = 'FG_HOME_TEAM_TOTAL',
@@ -366,6 +378,7 @@ home_df = final %>%
     
     'OPP_PITCHER_ID' = 'AWAY_PITCHER_ID',
     'OPP_PITCHER_NAME' = 'AWAY_PITCHER_NAME',
+    'OPP_PITCHER_THROW' = 'AWAY_PITCHER_THROW',
     'OPP_FG_SPREAD' = 'AWAY_FG_SPREAD',
     'OPP_FG_SPREAD_PRICE' = 'AWAY_FG_SPREAD_PRICE',
     'OPP_FG_TEAM_TOTAL' = 'FG_AWAY_TEAM_TOTAL',
